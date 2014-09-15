@@ -25,7 +25,6 @@ bouncingball.pointerLock_ = function(canvas, event) {
 
 
 bouncingball.load = function() {
-  console.log('load');
   bouncingball.install_(document.getElementById('c0'));
   bouncingball.application_.start();
 };
@@ -100,7 +99,6 @@ bouncingball.BouncingBallRenderer.prototype.onChange = function(gl, width, heigh
  * @inheritDoc
  */
 bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
-  console.log('oncreate');
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   gl.enable(gl.BLEND);
