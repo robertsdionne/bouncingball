@@ -51,6 +51,7 @@ bouncingball.abstractMethod = function() {
   'program.js',
   'renderer.js',
   'application.js',
+  'grid.js',
   'bouncingball.js'
 ].forEach(function(source) {
   document.write([
