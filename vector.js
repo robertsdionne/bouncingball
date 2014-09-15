@@ -59,11 +59,27 @@ bouncingball.Vector.prototype.negate = function() {
 };
 
 
+/**
+ * @return {bouncingball.Vector} this vector normalized
+ */
+bouncingball.Vector.prototype.normalized = function() {
+  return this.over(this.magnitude());
+};
+
+
 bouncingball.Vector.prototype.toDual = function() {
   return new bouncingball.DualVector(
       new bouncingball.DualNumber(this.x),
       new bouncingball.DualNumber(this.y),
       new bouncingball.DualNumber(this.z));
+};
+
+
+/**
+ * @return {number} The magnitude of this vector.
+ */
+bouncingball.Vector.prototype.magnitude = function() {
+  return Math.sqrt(this.dot(this));
 };
 
 
@@ -151,6 +167,16 @@ bouncingball.Vector.prototype.cross = function(that) {
  */
 bouncingball.Vector.prototype.dot = function(that) {
   return this.x * that.x + this.y * that.y + this.z * that.z;
+};
+
+
+bouncingball.Vector.prototype.toMatrix = function() {
+  return [
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    -this.x, -this.y, -this.z, 1.0
+  ];
 };
 
 
