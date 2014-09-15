@@ -3,7 +3,7 @@
     <script type="application/javascript" src="base.js"></script>
     <script id="v0" type="x-shader/x-vertex">
       uniform float time;
-      uniform mat4 projection, view, view_inverse;
+      uniform mat4 projection, rotation, rotation_inverse, translation, translation_inverse;
       attribute vec3 position, barycentric;
       varying vec3 fragment_barycentric, fragment_position;
       varying vec4 fragment_world_position;
@@ -79,15 +79,17 @@
       }
 
       void main() {
+        mat4 transform = rotation * translation;
+        mat4 transform_inverse = translation_inverse * rotation_inverse;
         fragment_barycentric = barycentric;
-        vec4 p = view_inverse * vec4(position - vec3(0.0, 0.0, 8.0), 1.0);
+        vec4 p = transform_inverse * vec4(position - vec3(0.0, 0.0, 8.0), 1.0);
         p /= p.w;
-        vec4 zero = view_inverse * vec4(vec3(0.0), 1.0);
+        vec4 zero = transform_inverse * vec4(vec3(0.0), 1.0);
         zero /= zero.w;
         float f_at_0 = f(zero.xz).z;
         float f_at_xz = f(p.xz).z;
         fragment_position = vec3(p.x, f_at_xz - f_at_0, p.z);
-        fragment_world_position = view * vec4(fragment_position, 1.0);
+        fragment_world_position = transform * vec4(fragment_position, 1.0);
         gl_Position = projection * fragment_world_position;
       }
     </script>
@@ -95,7 +97,7 @@
       precision mediump float;
       uniform bool wireframe;
       uniform highp float time;
-      uniform highp mat4 view;
+      uniform highp mat4 rotation, rotation_inverse, translation, translation_inverse;
       varying vec3 fragment_barycentric, fragment_normal, fragment_position;
       varying vec4 fragment_world_position;
 
@@ -189,9 +191,11 @@
       }
 
       void main() {
+        mat4 transform = rotation * translation;
+        mat4 transform_inverse = translation_inverse * rotation_inverse;
         vec2 xz = 80.0 * vec2(cos(2.0 * time), sin(2.0 * time));
         vec4 light_vector = vec4(vec3(xz.x, f(xz).z + 0.1, xz.y) - fragment_world_position.xyz, 1.0);
-        light_vector = view * light_vector;
+        light_vector = rotation * light_vector;
         light_vector /= light_vector.w;
         vec3 light_direction = normalize(light_vector.xyz);
         float light_square_distance = dot(light_vector.xyz, light_vector.xyz);

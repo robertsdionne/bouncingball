@@ -23,9 +23,7 @@ bouncingball.inherits = function(child, parent) {
 bouncingball.bind = function(fn, self) {
   var context = self || bouncingball.global;
   if (arguments.length > 2) {
-    console.log('whoop');
     var bound = Array.prototype.slice.call(arguments, 2);
-    console.log(bound);
     return function() {
       var newArgs = Array.prototype.slice.call(arguments);
       Array.prototype.unshift.apply(newArgs, bound);
@@ -54,6 +52,8 @@ bouncingball.abstractMethod = function() {
   'renderer.js',
   'application.js',
   'grid.js',
+  'quaternion.js',
+  'vector.js',
   'bouncingball.js'
 ].forEach(function(source) {
   document.write([
