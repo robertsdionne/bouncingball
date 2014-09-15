@@ -3,7 +3,7 @@
     <script type="application/javascript" src="base.js"></script>
     <script id="v0" type="x-shader/x-vertex">
       uniform float time;
-      uniform mat4 projection, view;
+      uniform mat4 projection, view, view_inverse;
       attribute vec3 position, barycentric;
       varying vec3 fragment_barycentric, fragment_position;
       varying vec4 fragment_world_position;
@@ -48,7 +48,7 @@
 
       vec3 Sinc(vec3 u) {
         return Divide(
-          Sin(u - Constant(time) + Constant(kEpsilon)),
+          Sin(u - Constant(0.0 * time) + Constant(kEpsilon)),
           u + Constant(kEpsilon)
         );
       }
@@ -70,26 +70,32 @@
         vec3 x = X(xz.x);
         vec3 z = Y(xz.y);
         vec3 t = Constant(time);
-        // return Sin(x - t) + Divide(Square(z), Constant(1000.0));
-        return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
-            Divide(Square(
-              Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
-            ), Constant(1000.0));
+        // return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(10000.0))), Constant(100.0));
+        return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(100.0))), Constant(10.0)) + Multiply(Constant(20.0), Sin(Divide(x, Constant(40.0)) - t)) + Divide(Square(x) + Square(z), Constant(3900.0));
+        // return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
+        //     Divide(Square(
+        //       Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
+        //     ), Constant(1000.0));
       }
 
       void main() {
         fragment_barycentric = barycentric;
-        float f_at_0 = f(vec2(0.0)).z;
-        float f_at_xz = f(position.xz).z;
-        fragment_position = vec3(position.x, position.y + f_at_xz - f_at_0, position.z);
-        gl_Position = projection * view * vec4(position.x, position.y + f_at_xz - f_at_0, position.z /*- 10.0 * time*/, 1.0);
-        fragment_world_position = view * vec4(position.x, position.y + f_at_xz - f_at_0, position.z, 1.0);
+        vec4 p = view_inverse * vec4(position - vec3(0.0, 0.0, 8.0), 1.0);
+        p /= p.w;
+        vec4 zero = view_inverse * vec4(vec3(0.0), 1.0);
+        zero /= zero.w;
+        float f_at_0 = f(zero.xz).z;
+        float f_at_xz = f(p.xz).z;
+        fragment_position = vec3(p.x, f_at_xz - f_at_0, p.z);
+        fragment_world_position = view * vec4(fragment_position, 1.0);
+        gl_Position = projection * fragment_world_position;
       }
     </script>
     <script id="f0" type="x-shader/x-fragment">
       precision mediump float;
       uniform bool wireframe;
       uniform highp float time;
+      uniform highp mat4 view;
       varying vec3 fragment_barycentric, fragment_normal, fragment_position;
       varying vec4 fragment_world_position;
 
@@ -133,7 +139,7 @@
 
       vec3 Sinc(vec3 u) {
         return Divide(
-          Sin(u - Constant(time) + Constant(kEpsilon)),
+          Sin(u - Constant(0.0 * time) + Constant(kEpsilon)),
           u + Constant(kEpsilon)
         );
       }
@@ -155,11 +161,12 @@
         vec3 x = X(xz.x);
         vec3 z = Y(xz.y);
         vec3 t = Constant(time);
-        // return Sin(x - t) + Divide(Square(z), Constant(1000.0));
-        return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
-            Divide(Square(
-              Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
-            ), Constant(1000.0));
+        // return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(10000.0))), Constant(100.0));
+        return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(100.0))), Constant(10.0)) + Multiply(Constant(20.0), Sin(Divide(x, Constant(40.0)) - t)) + Divide(Square(x) + Square(z), Constant(3900.0));
+        // return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
+        //     Divide(Square(
+        //       Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
+        //     ), Constant(1000.0));
       }
 
       vec3 normal_f(vec2 xz) {
@@ -182,20 +189,33 @@
       }
 
       void main() {
-        vec3 light_direction = normalize(vec3(1000.0 * cos(0.0), 1000.0, 1000.0 * sin(0.0)) - fragment_world_position.xyz);
+        vec2 xz = 80.0 * vec2(cos(2.0 * time), sin(2.0 * time));
+        vec4 light_vector = vec4(vec3(xz.x, f(xz).z + 0.1, xz.y) - fragment_world_position.xyz, 1.0);
+        light_vector = view * light_vector;
+        light_vector /= light_vector.w;
+        vec3 light_direction = normalize(light_vector.xyz);
+        float light_square_distance = dot(light_vector.xyz, light_vector.xyz);
         float product = dot(normal_f(fragment_position.xz), light_direction);
-        product *= 0.5;
-        product += 0.5;
-        product *= product;
-        float light = product;
+        product = clamp(product, 0.0, 1.0);
+        // product *= 0.5;
+        // product += 0.5;
+        // product *= product;
+        float light = 0.0 * (1.0e2 * product / light_square_distance + 5.0e1 * product / sqrt(light_square_distance));
+        vec3 sun_direction = normalize(vec3(-1.0, 1.0, 1.0));
+        float product2 = dot(normal_f(fragment_position.xz), sun_direction);
+        product2 *= 0.5;
+        product2 += 0.5;
+        product2 *= product2;
+        float light2 = product2 / 1.2;
         if (gl_FrontFacing) {
           if (wireframe && any(lessThan(fragment_barycentric.xz, vec2(0.05)))) {
             gl_FragColor = vec4(vec3(0.0), 1.0);
           } else {
-            gl_FragColor = vec4(vec3(light) + 0.0, 1.0);
+            gl_FragColor = vec4(vec3(light, 0.0, 0.0) + vec3(light2) + 0.0, 1.0);
           }
         } else {
-          gl_FragColor = vec4(vec3(light) + 0.0, 0.5);
+          gl_FragColor = vec4(vec3(light, 0.0, 0.0) + vec3(light2) + 0.0, 0.5);
+          // discard;
         }
       }
     </script>

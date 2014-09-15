@@ -61,9 +61,19 @@ bouncingball.BouncingBallRenderer.prototype.getFrustumMatrix = function(
 bouncingball.BouncingBallRenderer.prototype.getIdentityMatrix = function() {
   return [
     1, 0, 0, 0,
+    0, 1, 0, 0,
     0, 0, 1, 0,
-    0, -1, 0, 0,
-    0.0, 0.0, -7.0, 1
+    -0.0, -2.0, -80.0, 1
+  ];
+};
+
+
+bouncingball.BouncingBallRenderer.prototype.getInverseIdentityMatrix = function() {
+  return [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    -0.0, 2.0, 80.0, 1
   ];
 };
 
@@ -75,7 +85,7 @@ bouncingball.BouncingBallRenderer.prototype.onChange = function(gl, width, heigh
   gl.viewport(0, 0, width, height);
   var aspect = width / height;
   this.projection_ = this.getFrustumMatrix(
-      -aspect/10, aspect/10, -0.1, 0.1, 0.1, 4000.0);
+      -aspect/10, aspect/10, -0.1, 0.1, 0.1, 8000.0);
 };
 
 
@@ -609,7 +619,6 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
   console.log('oncreate');
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-  gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.frontFace(gl.CCW);
@@ -634,17 +643,34 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
  * @inheritDoc
  */
 bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
+  this.handleKeys(this.keys_);
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
   gl.useProgram(this.p_.handle);
-  gl.uniform1i(this.p_['wireframe'], true);
+  gl.uniform1i(this.p_['wireframe'], false);
   gl.uniform1f(this.p_['time'], bouncingball.global.performance.now() / 1000.0);
   gl.uniformMatrix4fv(this.p_['projection'], false, this.projection_);
   gl.uniformMatrix4fv(this.p_['view'], false, this.getIdentityMatrix());
+  gl.uniformMatrix4fv(this.p_['view_inverse'], false, this.getInverseIdentityMatrix());
   gl.vertexAttribPointer(this.p_['position'], 3, gl.FLOAT, false, 24, 0);
   gl.enableVertexAttribArray(this.p_['position']);
   gl.vertexAttribPointer(this.p_['barycentric'], 3, gl.FLOAT, false, 24, 12);
   gl.enableVertexAttribArray(this.p_['barycentric']);
   gl.bindBuffer(gl.ARRAY_BUFFER, this.grid_);
+  gl.disable(gl.DEPTH_TEST);
+  gl.drawArrays(gl.TRIANGLES, 0, this.grid_data_.length / 6);
+  gl.enable(gl.DEPTH_TEST);
   gl.drawArrays(gl.TRIANGLES, 0, this.grid_data_.length / 6);
   gl.flush();
+};
+
+
+bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
+  if (keys.justPressed(bouncingball.Key.LEFT)) {
+    try {
+      document.getElementById('c0').requestPointerLock();
+      console.log('request pointer lock');
+    } catch (ignored) {
+      console.log(ignored);
+    }
+  }
 };
