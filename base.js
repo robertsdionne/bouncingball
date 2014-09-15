@@ -52,6 +52,8 @@ bouncingball.abstractMethod = function() {
   'renderer.js',
   'application.js',
   'grid.js',
+  'quaternion.js',
+  'vector.js',
   'bouncingball.js'
 ].forEach(function(source) {
   document.write([
