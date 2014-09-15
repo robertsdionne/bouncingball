@@ -22,11 +22,13 @@ bouncingball.inherits = function(child, parent) {
 
 bouncingball.bind = function(fn, self) {
   var context = self || bouncingball.global;
-  if (arguments > 2) {
+  if (arguments.length > 2) {
+    console.log('whoop');
     var bound = Array.prototype.slice.call(arguments, 2);
+    console.log(bound);
     return function() {
       var newArgs = Array.prototype.slice.call(arguments);
-      Array.prototype.unshift.apply(arguments, bound);
+      Array.prototype.unshift.apply(newArgs, bound);
       return fn.apply(context, newArgs);
     };
   } else {
