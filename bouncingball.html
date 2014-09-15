@@ -1,14 +1,170 @@
 <html>
   <head>
-    <script type="application/javascript" src="bouncingball.js"></script>
+    <script type="application/javascript" src="base.js"></script>
+    <script id="v0" type="x-shader/x-vertex">
+      uniform float time;
+      uniform mat4 projection, view;
+      attribute vec3 position, barycentric;
+      varying vec3 fragment_barycentric, fragment_normal, fragment_position;
+      varying vec4 fragment_world_position;
+
+      const float kEpsilon = 1e-0;
+
+      float sinc(float u) {
+        return sin(u - 1.0 * time + kEpsilon) / (u + kEpsilon);
+      }
+
+      float f(vec2 xz) {
+        return time * sinc(dot(xz, xz) / time / time) + (10.0 * time - length(xz)) * (10.0 * time - length(xz)) / 1000.0;
+      }
+
+      float df_dx(vec2 xz) {
+        return (f(xz + vec2(1.0e-4, 0.0)) - f(xz - vec2(1.0e-4, 0.0))) / 2.0e-4;
+        // return xz.x * (0.002 - 0.02 * time / length(xz));
+      }
+
+      float df_dz(vec2 xz) {
+        return (f(xz + vec2(0.0, 1.0e-4)) - f(xz - vec2(0.0, 1.0e-4))) / 2.0e-4;
+        // return xz.y * (0.002 - 0.02 * time / length(xz));
+      }
+
+      vec2 del_f(vec2 xz) {
+        return vec2(df_dx(xz), df_dz(xz));
+      }
+
+      vec3 normal_f(vec2 xz) {
+        return normalize(vec3(-df_dx(xz), 1.0, -df_dz(xz)));
+      }
+
+      void main() {
+        fragment_barycentric = barycentric;
+        fragment_normal = normal_f(position.xz);
+        fragment_position = vec3(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z);
+        gl_Position = projection * view * vec4(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z - 10.0 * time, 1.0);
+        fragment_world_position = view * vec4(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z, 1.0);
+      }
+    </script>
+    <script id="f0" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform bool wireframe;
+      uniform highp float time;
+      varying vec3 fragment_barycentric, fragment_normal, fragment_position;
+      varying vec4 fragment_world_position;
+
+      const float kEpsilon = 1e-0;
+
+      float sinc(float u) {
+        return sin(u - 1.0 * time + kEpsilon) / (u + kEpsilon);
+      }
+
+      float f(vec2 xz) {
+        return time * sinc(dot(xz, xz) / time / time) + (10.0 * time - length(xz)) * (10.0 * time - length(xz)) / 1000.0;
+      }
+
+      float df_dx(vec2 xz) {
+        // return (f(xz + vec2(1.0e-4, 0.0)) - f(xz - vec2(1.0e-4, 0.0))) / 2.0e-4;
+        // return xz.x * (0.002 - 0.02 * time / length(xz));
+        return xz.x * (
+          2.0 * time * cos(
+            -(
+              dot(xz, xz) / (time * time)
+            ) + time - kEpsilon
+          ) / (
+            time * time * kEpsilon + dot(xz, xz)
+          ) + 2.0 * time * time * time * sin(
+            -(
+              dot(xz, xz) / (time * time)
+            ) + time - kEpsilon
+          ) / (
+            (
+              time * time * kEpsilon + dot(xz, xz)
+            ) * (
+              time * time * kEpsilon + dot(xz, xz)
+            )
+          ) + 0.002 - 0.02 * time / length(xz)
+        );
+      }
+
+      float df_dz(vec2 xz) {
+        // return (f(xz + vec2(0.0, 1.0e-4)) - f(xz - vec2(0.0, 1.0e-4))) / 2.0e-4;
+        // return xz.y * (0.002 - 0.02 * time / length(xz));
+        return xz.y * (
+          2.0 * time * cos(
+            -(
+              dot(xz, xz) / (time * time)
+            ) + time - kEpsilon
+          ) / (
+            time * time * kEpsilon + dot(xz, xz)
+          ) + 2.0 * time * time * time * sin(
+            -(
+              dot(xz, xz) / (time * time)
+            ) + time - kEpsilon
+          ) / (
+            (
+              time * time * kEpsilon + dot(xz, xz)
+            ) * (
+              time * time * kEpsilon + dot(xz, xz)
+            )
+          ) + 0.002 - 0.02 * time / length(xz)
+        );
+      }
+
+      vec2 del_f(vec2 xz) {
+        return vec2(df_dx(xz), df_dz(xz));
+      }
+
+      vec3 normal_f(vec2 xz) {
+        return normalize(vec3(-df_dx(xz), 1.0, -df_dz(xz)));
+      }
+
+      const float c = 0.01;
+      const float b = 0.01;
+
+      vec3 applyFog( in vec3  rgb,      // original color of the pixel
+                     in float distance, // camera to point distance
+                     in vec3  rayOri,   // camera position
+                     in vec3  rayDir )  // camera to point vector
+      {
+          float fogAmount = c * exp(-rayOri.y*b) * (1.0-exp( -distance*rayDir.y*b ))/rayDir.y;
+          // float fogAmount = exp( -distance*b );
+          vec3  fogColor  = vec3(0.5,0.6,0.7);
+          return mix( rgb, fogColor, fogAmount );
+      }
+
+      void main() {
+        vec3 light_direction = normalize(vec3(1000.0 * cos(0.0), 1000.0, 1000.0 * sin(0.0)) - fragment_world_position.xyz);
+        float product = dot(normal_f(fragment_position.xz), light_direction);
+        product *= 0.5;
+        product += 0.5;
+        product *= product;
+        float light = product;
+        if (gl_FrontFacing) {
+          if (wireframe && any(lessThan(fragment_barycentric.xz, vec2(0.05)))) {
+            gl_FragColor = vec4(vec3(0.0), 1.0);
+          } else {
+            gl_FragColor = vec4(vec3(light) + 0.0, 1.0);
+          }
+        } else {
+          gl_FragColor = vec4(vec3(light) + 0.0, 0.5);
+        }
+      }
+    </script>
     <style type="text/css">
+      body {
+        margin: 0px;
+      }
       #c {
         width: 100%;
         height: 100%;
       }
+      #container {
+        float: left;
+      }
     </style>
   </head>
-  <body onload="load();">
-    <canvas id='c'></canvas>
+  <body onload="bouncingball.load();">
+    <div id="container">
+      <canvas id='c0'></canvas>
+    </div>
   </body>
 </html>
