@@ -11,7 +11,7 @@
  * @param {string} id
  */
 bouncingball.Shader = function(gl, id) {
-  this.name = id;
+  this.name_ = id;
   this.type_ = bouncingball.Shader.getType_(gl, id);
   this.source_ = bouncingball.Shader.getSource_(id);
 };
@@ -60,7 +60,7 @@ bouncingball.Shader.prototype.compile = function(gl) {
   if (!gl.getShaderParameter(this.handle, gl.COMPILE_STATUS)) {
     var log = gl.getShaderInfoLog(this.handle);
     this.dispose(gl);
-    throw new Error(log);
+    throw new Error(this.name_ + ': ' + log);
   }
 };
 

@@ -5,43 +5,85 @@
       uniform float time;
       uniform mat4 projection, view;
       attribute vec3 position, barycentric;
-      varying vec3 fragment_barycentric, fragment_normal, fragment_position;
+      varying vec3 fragment_barycentric, fragment_position;
       varying vec4 fragment_world_position;
 
       const float kEpsilon = 1e-0;
 
-      float sinc(float u) {
-        return sin(u - 1.0 * time + kEpsilon) / (u + kEpsilon);
+      vec3 Constant(float c) {
+        return vec3(0.0, 0.0, c);
       }
 
-      float f(vec2 xz) {
-        return time * sinc(dot(xz, xz) / time / time) + (10.0 * time - length(xz)) * (10.0 * time - length(xz)) / 1000.0;
+      vec3 Multiply(vec3 u, vec3 v) {
+        return vec3(
+          u.x * v.z + u.z * v.x,
+          u.y * v.z + u.z * v.y,
+          u.z * v.z
+        );
       }
 
-      float df_dx(vec2 xz) {
-        return (f(xz + vec2(1.0e-4, 0.0)) - f(xz - vec2(1.0e-4, 0.0))) / 2.0e-4;
-        // return xz.x * (0.002 - 0.02 * time / length(xz));
+      vec3 Divide(vec3 u, vec3 v) {
+        return vec3(
+          (u.x * v.z - u.z * v.x) / v.z / v.z,
+          (u.y * v.z - u.z * v.y) / v.z / v.z,
+          u.z / v.z
+        );
       }
 
-      float df_dz(vec2 xz) {
-        return (f(xz + vec2(0.0, 1.0e-4)) - f(xz - vec2(0.0, 1.0e-4))) / 2.0e-4;
-        // return xz.y * (0.002 - 0.02 * time / length(xz));
+      vec3 Sin(vec3 u) {
+        return vec3(
+          u.x * cos(u.z),
+          u.y * cos(u.z),
+          sin(u.z)
+        );
       }
 
-      vec2 del_f(vec2 xz) {
-        return vec2(df_dx(xz), df_dz(xz));
+      vec3 X(float x) {
+        return vec3(1.0, 0.0, x);
       }
 
-      vec3 normal_f(vec2 xz) {
-        return normalize(vec3(-df_dx(xz), 1.0, -df_dz(xz)));
+      vec3 Y(float y) {
+        return vec3(0.0, 1.0, y);
+      }
+
+      vec3 Sinc(vec3 u) {
+        return Divide(
+          Sin(u - Constant(time) + Constant(kEpsilon)),
+          u + Constant(kEpsilon)
+        );
+      }
+
+      vec3 Square(vec3 u) {
+        return vec3(
+          u.x * 2.0 * u.z,
+          u.y * 2.0 * u.z,
+          u.z * u.z
+        );
+      }
+
+      vec3 SquareRoot(vec3 u) {
+        float s = sqrt(u.z);
+        return vec3(u.x / s / 2.0, u.y / s / 2.0, s);
+      }
+
+      vec3 f(vec2 xz) {
+        vec3 x = X(xz.x);
+        vec3 z = Y(xz.y);
+        vec3 t = Constant(time);
+        // return Sin(x - t) + Divide(Square(z), Constant(1000.0));
+        return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
+            Divide(Square(
+              Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
+            ), Constant(1000.0));
       }
 
       void main() {
         fragment_barycentric = barycentric;
-        fragment_normal = normal_f(position.xz);
-        fragment_position = vec3(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z);
-        gl_Position = projection * view * vec4(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z - 10.0 * time, 1.0);
-        fragment_world_position = view * vec4(position.x, position.y + f(position.xz) /*- f(vec2(0.0))*/, position.z, 1.0);
+        float f_at_0 = f(vec2(0.0)).z;
+        float f_at_xz = f(position.xz).z;
+        fragment_position = vec3(position.x, position.y + f_at_xz - f_at_0, position.z);
+        gl_Position = projection * view * vec4(position.x, position.y + f_at_xz - f_at_0, position.z /*- 10.0 * time*/, 1.0);
+        fragment_world_position = view * vec4(position.x, position.y + f_at_xz - f_at_0, position.z, 1.0);
       }
     </script>
     <script id="f0" type="x-shader/x-fragment">
@@ -53,68 +95,76 @@
 
       const float kEpsilon = 1e-0;
 
-      float sinc(float u) {
-        return sin(u - 1.0 * time + kEpsilon) / (u + kEpsilon);
+      vec3 Constant(float c) {
+        return vec3(0.0, 0.0, c);
       }
 
-      float f(vec2 xz) {
-        return time * sinc(dot(xz, xz) / time / time) + (10.0 * time - length(xz)) * (10.0 * time - length(xz)) / 1000.0;
-      }
-
-      float df_dx(vec2 xz) {
-        // return (f(xz + vec2(1.0e-4, 0.0)) - f(xz - vec2(1.0e-4, 0.0))) / 2.0e-4;
-        // return xz.x * (0.002 - 0.02 * time / length(xz));
-        return xz.x * (
-          2.0 * time * cos(
-            -(
-              dot(xz, xz) / (time * time)
-            ) + time - kEpsilon
-          ) / (
-            time * time * kEpsilon + dot(xz, xz)
-          ) + 2.0 * time * time * time * sin(
-            -(
-              dot(xz, xz) / (time * time)
-            ) + time - kEpsilon
-          ) / (
-            (
-              time * time * kEpsilon + dot(xz, xz)
-            ) * (
-              time * time * kEpsilon + dot(xz, xz)
-            )
-          ) + 0.002 - 0.02 * time / length(xz)
+      vec3 Multiply(vec3 u, vec3 v) {
+        return vec3(
+          u.x * v.z + v.x * u.z,
+          u.y * v.z + v.y * u.z,
+          u.z * v.z
         );
       }
 
-      float df_dz(vec2 xz) {
-        // return (f(xz + vec2(0.0, 1.0e-4)) - f(xz - vec2(0.0, 1.0e-4))) / 2.0e-4;
-        // return xz.y * (0.002 - 0.02 * time / length(xz));
-        return xz.y * (
-          2.0 * time * cos(
-            -(
-              dot(xz, xz) / (time * time)
-            ) + time - kEpsilon
-          ) / (
-            time * time * kEpsilon + dot(xz, xz)
-          ) + 2.0 * time * time * time * sin(
-            -(
-              dot(xz, xz) / (time * time)
-            ) + time - kEpsilon
-          ) / (
-            (
-              time * time * kEpsilon + dot(xz, xz)
-            ) * (
-              time * time * kEpsilon + dot(xz, xz)
-            )
-          ) + 0.002 - 0.02 * time / length(xz)
+      vec3 Divide(vec3 u, vec3 v) {
+        return vec3(
+          (u.x * v.z - u.z * v.x) / v.z / v.z,
+          (u.y * v.z - u.z * v.y) / v.z / v.z,
+          u.z / v.z
         );
       }
 
-      vec2 del_f(vec2 xz) {
-        return vec2(df_dx(xz), df_dz(xz));
+      vec3 Sin(vec3 u) {
+        return vec3(
+          u.x * cos(u.z),
+          u.y * cos(u.z),
+          sin(u.z)
+        );
+      }
+
+      vec3 X(float x) {
+        return vec3(1.0, 0.0, x);
+      }
+
+      vec3 Y(float y) {
+        return vec3(0.0, 1.0, y);
+      }
+
+      vec3 Sinc(vec3 u) {
+        return Divide(
+          Sin(u - Constant(time) + Constant(kEpsilon)),
+          u + Constant(kEpsilon)
+        );
+      }
+
+      vec3 Square(vec3 u) {
+        return vec3(
+          u.x * 2.0 * u.z,
+          u.y * 2.0 * u.z,
+          u.z * u.z
+        );
+      }
+
+      vec3 SquareRoot(vec3 u) {
+        float s = sqrt(u.z);
+        return vec3(u.x / s / 2.0, u.y / s / 2.0, s);
+      }
+
+      vec3 f(vec2 xz) {
+        vec3 x = X(xz.x);
+        vec3 z = Y(xz.y);
+        vec3 t = Constant(time);
+        // return Sin(x - t) + Divide(Square(z), Constant(1000.0));
+        return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
+            Divide(Square(
+              Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
+            ), Constant(1000.0));
       }
 
       vec3 normal_f(vec2 xz) {
-        return normalize(vec3(-df_dx(xz), 1.0, -df_dz(xz)));
+        vec3 f = f(xz);
+        return normalize(vec3(-f.x, 1.0, -f.y));
       }
 
       const float c = 0.01;

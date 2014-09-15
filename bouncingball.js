@@ -61,9 +61,9 @@ bouncingball.BouncingBallRenderer.prototype.getFrustumMatrix = function(
 bouncingball.BouncingBallRenderer.prototype.getIdentityMatrix = function() {
   return [
     1, 0, 0, 0,
-    0, 1, 0, 0,
     0, 0, 1, 0,
-    0.0, -1.1, -8, 1
+    0, -1, 0, 0,
+    0.0, 0.0, -7.0, 1
   ];
 };
 
@@ -84,12 +84,12 @@ bouncingball.BouncingBallRenderer.prototype.createGrid_ = function(width, opt_le
   var mm = 0.00;
   var grid = [];
   for (var i = 0; i <= levels; ++i) {
-    var scale = 10.0 * Math.pow(3.0, i);
+    var scale = 10.0 * Math.pow(3, i);
     for (var j = 0; j < width; ++j) {
       for (var k = 0; k < width; ++k) {
         if (i > 0 &&
-            width / 3.0 < j && j + 1 < 2.0 / 3.0 * width &&
-            width / 3.0 < k && k + 1 < 2.0 / 3.0 * width) {
+            width / 3.0 < j + 2 && j - 1 < 2.0 / 3.0 * width &&
+            width / 3.0 < k + 2 && k - 1 < 2.0 / 3.0 * width) {
           continue;
         }
         // v00
@@ -127,6 +127,474 @@ bouncingball.BouncingBallRenderer.prototype.createGrid_ = function(width, opt_le
         grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
         // barycentric
         grid.push(0.0, 1.0, 0.0);
+
+        if (i > 0 &&
+            2.0 / 3.0 * width == j - 1 &&
+            2.0 / 3.0 * width == k - 1) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v01
+          // x01, y01, z01
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
+
+        if (i > 0 &&
+            1.0 / 3.0 * width == j + 2 &&
+            2.0 / 3.0 * width == k - 1) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v01
+          // x01, y01, z01
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
+
+        if (i > 0 &&
+            2.0 / 3.0 * width == j - 1 &&
+            1.0 / 3.0 * width == k + 2) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v01
+          // x01, y01, z01
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
+
+        if (i > 0 &&
+            1.0 / 3.0 * width == j + 2 &&
+            1.0 / 3.0 * width == k + 2) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v01
+          // x01, y01, z01
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v11
+          // x11, y11, z11
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
+
+        if (i > 0 &&
+            2.0 / 3.0 * width == j - 1 &&
+            width / 3.0 < k + 1 && k < 2.0 / 3.0 * width) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j - 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+        }
+
+        if (i > 0 &&
+            1.0 / 3.0 * width == j + 2 &&
+            width / 3.0 < k + 1 && k < 2.0 / 3.0 * width) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale - scale / width / 3.0, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 2) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
+
+        if (i > 0 &&
+            2.0 / 3.0 * width == k - 1 &&
+            width / 3.0 < j + 1 && j < 2.0 / 3.0 * width) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 0) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k - 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k-1) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k-1) / width - 0.5) * scale, mm * scale, ((j+1) / width - 0.5) * scale - 2.0 * scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+        }
+
+        if (i > 0 &&
+            1.0 / 3.0 * width == k + 2 &&
+            width / 3.0 < j + 1 && j < 2.0 / 3.0 * width) {
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 0) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - 2.0 * scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j + 1) / width - 0.5) * scale - scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 1) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(1.0, 0.0, 0.0);
+
+          // v00
+          // x00, y00, z00
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j+1) / width - 0.5) * scale - 2.0 * scale / width / 3.0);
+          // barycentric
+          grid.push(0.0, 0.0, 1.0);
+
+          // v10
+          // x10, y10, z10
+          grid.push(((k + 2) / width - 0.5) * scale, mm * scale, ((j) / width - 0.5) * scale);
+          // barycentric
+          grid.push(0.0, 1.0, 0.0);
+        }
       }
     }
   }
@@ -144,6 +612,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.frontFace(gl.CCW);
 
   this.keys_.install();
 
@@ -154,7 +623,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
   this.p_.link(gl);
 
   // var grid = 
-  this.grid_data_ = this.createGrid_(240, 7);
+  this.grid_data_ = this.createGrid_(60, 7);
   this.grid_ = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.grid_);
   gl.bufferData(gl.ARRAY_BUFFER, this.grid_data_, gl.STATIC_DRAW);
@@ -167,7 +636,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
 bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
   gl.useProgram(this.p_.handle);
-  gl.uniform1i(this.p_['wireframe'], false);
+  gl.uniform1i(this.p_['wireframe'], true);
   gl.uniform1f(this.p_['time'], bouncingball.global.performance.now() / 1000.0);
   gl.uniformMatrix4fv(this.p_['projection'], false, this.projection_);
   gl.uniformMatrix4fv(this.p_['view'], false, this.getIdentityMatrix());
