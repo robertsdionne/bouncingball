@@ -11,9 +11,16 @@ bouncingball.install_ = function(canvas, opt_options) {
   if (bouncingball.application_) {
     bouncingball.application_.uninstall();
   }
+  canvas.addEventListener('click', bouncingball.bind(
+      bouncingball.pointerLock_, null, canvas), true);
   var keys = new bouncingball.Keys(document);
   bouncingball.application_ = new bouncingball.Application(window, keys, opt_options);
   bouncingball.application_.install(canvas, new bouncingball.BouncingBallRenderer(keys));
+};
+
+
+bouncingball.pointerLock_ = function(canvas, event) {
+  canvas.requestPointerLock();
 };
 
 
@@ -120,7 +127,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
  * @inheritDoc
  */
 bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
-  this.handleKeys(this.keys_);
+  // this.handleKeys(this.keys_);
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
   gl.useProgram(this.p_.handle);
   gl.uniform1i(this.p_['wireframe'], false);
@@ -138,16 +145,4 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   gl.enable(gl.DEPTH_TEST);
   gl.drawArrays(gl.TRIANGLES, 0, this.grid_data_.length / 6);
   gl.flush();
-};
-
-
-bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
-  if (keys.justPressed(bouncingball.Key.LEFT)) {
-    try {
-      document.getElementById('c0').requestPointerLock();
-      console.log('request pointer lock');
-    } catch (ignored) {
-      console.log(ignored);
-    }
-  }
 };
