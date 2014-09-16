@@ -70,26 +70,6 @@ bouncingball.BouncingBallRenderer.prototype.getFrustumMatrix = function(
 };
 
 
-bouncingball.BouncingBallRenderer.prototype.getIdentityMatrix = function() {
-  return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    -0.0, -2.0, -80.0, 1
-  ];
-};
-
-
-bouncingball.BouncingBallRenderer.prototype.getInverseIdentityMatrix = function() {
-  return [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    -0.0, 2.0, 80.0, 1
-  ];
-};
-
-
 /**
  * @inheritDoc
  */
@@ -105,8 +85,10 @@ bouncingball.BouncingBallRenderer.prototype.onChange = function(gl, width, heigh
  * @inheritDoc
  */
 bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LESS);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.frontFace(gl.CCW);
@@ -127,6 +109,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
 
   this.rotation_ = new bouncingball.Quaternion();
   this.translation_ = new bouncingball.Vector(0.0, 2.0, 80.0);
+  this.wireframe_ = false;
 };
 
 
@@ -137,7 +120,7 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   this.handleKeys(this.keys_);
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
   gl.useProgram(this.p_.handle);
-  gl.uniform1i(this.p_['wireframe'], false);
+  gl.uniform1i(this.p_['wireframe'], this.wireframe_);
   gl.uniform1f(this.p_['time'], bouncingball.global.performance.now() / 1000.0);
   gl.uniformMatrix4fv(this.p_['projection'], false, this.projection_);
   gl.uniformMatrix4fv(this.p_['rotation'], false, this.rotation_.toMatrix());
@@ -167,6 +150,10 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
   forward.y = 0.0;
   forward = forward.normalized();
 
+  if (keys.isPressed(bouncingball.Key.SHIFT)) {
+    d = 1e1;
+  }
+
   if (keys.isPressed(bouncingball.Key.A) || keys.isPressed(bouncingball.Key.LEFT)) {
     this.translation_ = this.translation_.plus(right.times(-d));
   }
@@ -189,6 +176,10 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
 
   if (keys.isPressed(bouncingball.Key.Q)) {
     this.translation_ = this.translation_.plus(up.times(d));
+  }
+
+  if (keys.justPressed(bouncingball.Key.SPACE)) {
+    this.wireframe_ = !this.wireframe_;
   }
 };
 

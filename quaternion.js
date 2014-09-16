@@ -165,13 +165,25 @@ bouncingball.Quaternion.prototype.toMatrix = function() {
   var v = this.vector;
   var w = this.scalar;
   return [
-    1.0 - 2.0 * (v.y * v.y + v.z * v.z), 2.0 * (v.x * v.y + w * v.z), 2.0 * (v.x * v.z - w * v.y), 0.0,
+    w * w + v.x * v.x - v.y * v.y - v.z * v.z,
+    2.0 * (v.x * v.y + w * v.z),
+    2.0 * (v.x * v.z - w * v.y),
+    0.0,
 
-    2.0 * (v.x * v.y - w * v.z), 1.0 - 2.0 * (v.x * v.x + v.z * v.z), 2.0 * (v.y * v.z + w * v.x), 0.0,
+    2.0 * (v.x * v.y - w * v.z),
+    w * w - v.x * v.x + v.y * v.y - v.z * v.z,
+    2.0 * (v.y * v.z + w * v.x),
+    0.0,
 
-    2.0 * (v.x * v.z + w * v.y), 2.0 * (v.y * v.z - w * v.x), 1.0 - 2.0 * (v.x * v.x + v.y * v.y), 0.0,
+    2.0 * (v.x * v.z + w * v.y),
+    2.0 * (v.y * v.z - w * v.x),
+    w * w - v.x * v.x - v.y * v.y + v.z * v.z,
+    0.0,
 
-    0.0, 0.0, 0.0, 1.0
+    0.0,
+    0.0,
+    0.0,
+    1.0
   ];
 };
 
