@@ -25,7 +25,7 @@ bouncingball.Shader = function(gl, var_args) {
  * @return {string} the shader source
  */
 bouncingball.Shader.getSource_ = function(id) {
-  return bouncingball.global.document.getElementById(id).text;
+  return bouncingball.global.document.getElementById(id).innerText;
 };
 
 
