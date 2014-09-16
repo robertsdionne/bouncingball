@@ -23,6 +23,8 @@ bouncingball.Keys = function(document) {
 
 
 bouncingball.Key = {
+  SHIFT: 16,
+  SPACE: 32,
   LEFT: 37,
   UP: 38,
   RIGHT: 39,
@@ -58,6 +60,7 @@ bouncingball.Keys.prototype.uninstall = function() {
 
 
 bouncingball.Keys.prototype.handleKeyDown_ = function(event) {
+  console.log(event);
   this.keys_[event.keyCode] = true;
   return true;
 };
