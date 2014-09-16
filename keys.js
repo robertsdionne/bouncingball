@@ -60,7 +60,7 @@ bouncingball.Keys.prototype.uninstall = function() {
 
 
 bouncingball.Keys.prototype.handleKeyDown_ = function(event) {
-  console.log(event);
+  // console.log(event);
   this.keys_[event.keyCode] = true;
   return true;
 };
