@@ -60,17 +60,7 @@
         return vec3(u.x / s / 2.0, u.y / s / 2.0, s);
       }
 
-      vec3 f(vec2 xz) {
-        vec3 x = X(xz.x);
-        vec3 z = Y(xz.y);
-        vec3 t = Constant(time);
-        // return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(10000.0))), Constant(100.0));
-        return Multiply(Sinc(Divide(Square(x) + Square(z), Constant(100.0))), Constant(10.0)) + Multiply(Constant(20.0), Sin(Divide(x, Constant(40.0)) - t)) + Divide(Square(x) + Square(z), Constant(3900.0));
-        // return Multiply(t, Sinc(Divide(Divide(Square(x) + Square(z), t), t))) +
-        //     Divide(Square(
-        //       Multiply(Constant(10.0), t) - SquareRoot(Square(x) + Square(z))
-        //     ), Constant(1000.0));
-      }
+      vec3 f(vec2 xy);
 
       vec3 normal_f(vec2 xz) {
         vec3 f = f(xz);
@@ -140,6 +130,8 @@
         }
       }
     </script>
+    <link href="http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic,700italic"
+        rel="stylesheet" type="text/css">
     <style type="text/css">
       body {
         margin: 0px;
@@ -151,10 +143,24 @@
       #container {
         float: left;
       }
+      #l0-editor {
+        font-family: 'Ubuntu Mono';
+        white-space: pre;
+        padding-left: 1em;
+      }
     </style>
   </head>
   <body onload="bouncingball.load();">
     <div id="container">
+      <div id="l0-editor" contentEditable="true">vec3 f(vec2 xy) {
+  vec3 x = X(xy.x);
+  vec3 y = Y(xy.y);
+  vec3 t = Constant(time);
+  return Multiply(Sinc(Divide(Square(x) + Square(y), Constant(100.0))), Constant(10.0)) +
+      Multiply(Constant(20.0), Sin(Divide(x, Constant(40.0)) - t)) + Divide(Square(x) +
+      Square(y), Constant(3900.0));
+}
+</div>
       <canvas id='c0'></canvas>
     </div>
   </body>

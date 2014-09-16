@@ -94,7 +94,7 @@ bouncingball.Application.prototype.onFrame_ = function() {
  * and stops the rendering loop.
  */
 bouncingball.Application.prototype.uninstall = function() {
-  bouncingball.global.cancelRequestAnimationFrame(this.handle_);
+  bouncingball.global.cancelAnimationFrame(this.handle_);
   this.renderer_.onDestroy(this.gl_);
   this.reset();
 };
