@@ -95,8 +95,8 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
 
   this.keys_.install();
 
-  var vertex = new bouncingball.Shader(gl, 'v0');
-  var fragment = new bouncingball.Shader(gl, 'f0');
+  var vertex = new bouncingball.Shader(gl, 'v0-preamble', 'l0-functions', 'v0-main');
+  var fragment = new bouncingball.Shader(gl, 'f0-preamble', 'l0-functions', 'f0-main');
   this.p_ = new bouncingball.Program(vertex, fragment);
   this.p_.create(gl);
   this.p_.link(gl);
