@@ -3,18 +3,15 @@
 /**
  * @constructor
  */
-bouncingball.Program = function(vertex, fragment) {
-  this.name = vertex.name + ':' + fragment.name;
+bouncingball.Program = function(var_args) {
+  this.name = Array.prototype.map.call(arguments, function(shader) {
+    return shader.name
+  }, this).join(':');
 
   /**
-   * @type {bouncingball.Shader}
+   * @type {Array.<bouncingball.Shader>}
    */
-  this.vertex_ = vertex;
-
-  /**
-   * @type {bouncingball.Shader}
-   */
-  this.fragment_ = fragment;
+  this.shaders_ = Array.prototype.slice.call(arguments);
 };
 
 
@@ -53,8 +50,9 @@ bouncingball.Program.prototype.defineAttributes = function(gl) {
  * @param {WebGLRenderingContext} gl
  */
 bouncingball.Program.prototype.create = function(gl) {
-  this.vertex_.create(gl);
-  this.fragment_.create(gl);
+  this.shaders_.forEach(function(shader) {
+    shader.create(gl);
+  }, this);
   this.handle = gl.createProgram();
 };
 
@@ -63,10 +61,10 @@ bouncingball.Program.prototype.create = function(gl) {
  * @param {WebGLRenderingContext} gl
  */
 bouncingball.Program.prototype.dispose = function(gl) {
-  gl.detachShader(this.handle, this.vertex_.handle);
-  this.vertex_.dispose(gl);
-  gl.detachShader(this.handle, this.fragment_.handle);
-  this.fragment_.dispose(gl);
+  this.shaders_.forEach(function(shader) {
+    gl.detachShader(this.handle, shader.handle);
+    shader.dispose(gl);
+  }, this);
   gl.deleteProgram(this.handle);
   this.handle = null;
 };
@@ -76,10 +74,10 @@ bouncingball.Program.prototype.dispose = function(gl) {
  * @param {WebGLRenderingContext} gl
  */
 bouncingball.Program.prototype.link = function(gl) {
-  this.vertex_.compile(gl);
-  gl.attachShader(this.handle, this.vertex_.handle);
-  this.fragment_.compile(gl);
-  gl.attachShader(this.handle, this.fragment_.handle);
+  this.shaders_.forEach(function(shader) {
+    shader.compile(gl);
+    gl.attachShader(this.handle, shader.handle);
+  }, this);
   gl.linkProgram(this.handle);
   if (!gl.getProgramParameter(this.handle, gl.LINK_STATUS)) {
     var log = gl.getProgramInfoLog(this.handle);
