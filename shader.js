@@ -10,10 +10,13 @@
  * @param {string} name
  * @param {string} id
  */
-bouncingball.Shader = function(gl, id) {
-  this.name_ = id;
-  this.type_ = bouncingball.Shader.getType_(gl, id);
-  this.source_ = bouncingball.Shader.getSource_(id);
+bouncingball.Shader = function(gl, var_args) {
+  var ids = Array.prototype.slice.call(arguments, 1);
+  this.name_ = ids.join(',');
+  this.type_ = bouncingball.Shader.getType_(gl, ids[0]);
+  this.source_ = ids.map(function(id) {
+    return bouncingball.Shader.getSource_(id);
+  }, this).join('\n');
 };
 
 
