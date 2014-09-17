@@ -54,6 +54,7 @@ bouncingball.abstractMethod = function() {
   'grid.js',
   'quaternion.js',
   'vector.js',
+  'multidualnumber.js',
   'bouncingball.js'
 ].forEach(function(source) {
   document.write([

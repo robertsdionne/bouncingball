@@ -6,12 +6,13 @@
  * @param {level} The number of levels. Each level is 3x larger with a 1/3 hole in the center,
  *     except for the base case which has no hole. Each level has "width" subdivisions.
  */
-bouncingball.createGrid = function(width, opt_levels) {
+bouncingball.createGrid = function(width, opt_levels, opt_initial_scale) {
   var levels = opt_levels || 0;
+  var initial_scale = opt_initial_scale || 1.0;
   var mm = 0.00;
   var grid = [];
   for (var i = 0; i <= levels; ++i) {
-    var scale = 10.0 * Math.pow(3, i);
+    var scale = initial_scale * Math.pow(3, i);
     for (var j = 0; j < width; ++j) {
       for (var k = 0; k < width; ++k) {
 

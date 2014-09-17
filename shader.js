@@ -63,7 +63,7 @@ bouncingball.Shader.prototype.compile = function(gl) {
   if (!gl.getShaderParameter(this.handle, gl.COMPILE_STATUS)) {
     var log = gl.getShaderInfoLog(this.handle);
     this.dispose(gl);
-    throw new Error(this.name_ + ': ' + log);
+    throw new Error(this.name_ + ': ' + log + this.source_);
   }
 };
 
