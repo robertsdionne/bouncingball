@@ -503,8 +503,8 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
       this.p1_['translation_inverse'], false, this.translation_.negate().toMatrix());
 
   gl.bindBuffer(gl.ARRAY_BUFFER, this.sphere_);
-  gl.vertexAttribPointer(this.p1_['position'], 3, gl.FLOAT, false, 24, 0);
-  gl.enableVertexAttribArray(this.p1_['position']);
+  gl.vertexAttribPointer(this.p1_['angles'], 3, gl.FLOAT, false, 24, 0);
+  gl.enableVertexAttribArray(this.p1_['angles']);
   gl.vertexAttribPointer(this.p1_['barycentric'], 3, gl.FLOAT, false, 24, 12);
   gl.enableVertexAttribArray(this.p1_['barycentric']);
 
