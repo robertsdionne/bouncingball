@@ -241,8 +241,11 @@
         top: 0;
         left: 0;
         background: transparent;
+      }
+      tr {
         font-family: 'Ubuntu Mono';
         font-weight: bold;
+        color: white;
       }
       .particle {
         color: rgb(255, 0, 0);
@@ -269,12 +272,25 @@
       <canvas id='c0'></canvas>
     </div>
     <div id="scoreboard">
-      <p class="particle">Particle: <span id="particle" class="particle"></span></p>
-      <p class="sgd">Stochastic Gradient Descent: <span id="sgd" class="sgd"></span></p>
-      <p class="momentum">Momentum: <span id="momentum" class="momentum"></span></p>
-      <p class="nesterov">Nesterov: <span id="nesterov" class="nesterov"></span></p>
-      <p class="adagrad">Adagrad: <span id="adagrad" class="adagrad"></span></p>
-      <p class="adadelta">Adadelta: <span id="adadelta" class="adadelta"></span></p>
+      <table>
+        <tr class="particle"><td>Annealing: </td><td id="particle" class="particle"></td></tr>
+        <tr class="sgd"><td>SGD: </td><td id="sgd" class="sgd"></td></tr>
+        <tr class="momentum"><td>Momentum: </td><td id="momentum" class="momentum"></td></tr>
+        <tr class="nesterov"><td>Nesterov: </td><td id="nesterov" class="nesterov"></td></tr>
+        <tr class="adagrad"><td>AdaGrad: </td><td id="adagrad" class="adagrad"></td></tr>
+        <tr class="adadelta"><td>AdaDelta: </td><td id="adadelta" class="adadelta"></td></tr>
+      </table>
+      <table>
+        <tr><td>Stochastic (, to toggle): </td><td id="stochastic"></td></tr>
+        <tr><td>Smoothed Stochastic (. to toggle): </td><td id="stochastic_low_frequency"></td></tr>
+        <tr><td>Time-Varying (/? to toggle): </td><td id="time_varying"></td></tr>
+        <tr><td>Show Wireframe (space to toggle): </td><td id="wireframe"></td></tr>
+        <tr><td>Control Viewpoint (click).</td></tr>
+        <tr><td>Follow a Solver (click again).</td></tr>
+        <tr><td>Move Viewpoint (WASD QZ).</td></tr>
+        <tr><td>Move Faster (shift).</td></tr>
+        <tr><td>Random Restart (R).</td></tr>
+      </table>
     </div>
   </body>
 </html>
