@@ -201,7 +201,8 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
   this.stochastic_ = true;
   this.stochastic_low_frequency_ = true;
   this.smooth_ = 0.9;
-  this.score_rate_ = 1e-2;
+  this.score_rate_ = 0.25;
+  this.score_decay_ = 0.9;
 
   this.particle_score_ = 0;
   this.sgd_score_ = 0;
@@ -221,7 +222,8 @@ bouncingball.BouncingBallRenderer.prototype.resetSimulation_ = function() {
   this.g_ = 9.8e1;
 
   var start = new bouncingball.Vector(
-      2000.0 * Math.random() - 1000.0, 1500.0 * Math.random(), -2000.0 * Math.random());
+      2000.0 * Math.random() - 1000.0, 1000.0 * Math.random(), -2000.0 * Math.random());
+  start.y += this.f(start.x, start.z).z;
   this.train_yet_ = false;
   this.collision_ = false;
 
@@ -305,14 +307,15 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
   if (this.train_yet_) {
     var sample = Math.random();
     if (sample < this.score_rate_) {
-      this.particle_score_ -= particle_z;
+      this.particle_score_ = this.particle_score_ * this.score_decay_ - particle_z * (1.0 - this.score_decay_);
     }
 
     var sgd = this.f(this.sgd_.x, this.sgd_.z);
     this.sgd_ = this.sgd_.minus(new bouncingball.Vector(sgd.dx, 0.0, sgd.dy));
     this.sgd_.y = sgd.z;
     if (sample < this.score_rate_) {
-      this.sgd_score_ -= sgd.z;
+      // this.sgd_score_ -= sgd.z;
+      this.sgd_score_ = this.sgd_score_ * this.score_decay_ - sgd.z * (1.0 - this.score_decay_);
     }
 
     var momentum = this.f(this.momentum_.x, this.momentum_.z);
@@ -321,7 +324,8 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
     this.momentum_ = this.momentum_.plus(this.momentum_v_);
     this.momentum_.y = momentum.z;
     if (sample < this.score_rate_) {
-      this.momentum_score_ -= momentum.z;
+      // this.momentum_score_ -= momentum.z;
+      this.momentum_score_ = this.momentum_score_ * this.score_decay_ - momentum.z * (1.0 - this.score_decay_);
     }
 
     var nesterov_temp = this.nesterov_.plus(this.nesterov_v_.times(this.nesterov_mu_));
@@ -331,7 +335,8 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
     this.nesterov_ = this.nesterov_.plus(this.nesterov_v_);
     this.nesterov_.y = nesterov.z;
     if (sample < this.score_rate_) {
-      this.nesterov_score_ -= nesterov.z;
+      // this.nesterov_score_ -= nesterov.z;
+      this.nesterov_score_ = this.nesterov_score_ * this.score_decay_ - nesterov.z * (1.0 - this.score_decay_);
     }
 
     var adagrad = this.f(this.adagrad_.x, this.adagrad_.z);
@@ -341,7 +346,8 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
     this.adagrad_.y = adagrad.z;
     this.adagrad_.z -= 100.0 * adagrad.dy / Math.sqrt(this.adagrad_sigma_.z);
     if (sample < this.score_rate_) {
-      this.adagrad_score_ -= adagrad.z;
+      // this.adagrad_score_ -= adagrad.z;
+      this.adagrad_score_ = this.adagrad_score_ * this.score_decay_ - adagrad.z * (1.0 - this.score_decay_);
     }
 
     var adadelta = this.f(this.adadelta_.x, this.adadelta_.z);
@@ -359,7 +365,8 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
     this.adadelta_.y = adadelta.z;
     this.adadelta_.z += 1e4 * delta_y;
     if (sample < this.score_rate_) {
-      this.adadelta_score_ -= adadelta.z;
+      // this.adadelta_score_ -= adadelta.z;
+      this.adadelta_score_ = this.adadelta_score_ * this.score_decay_ - adadelta.z * (1.0 - this.score_decay_);
     }
   }
 
@@ -396,12 +403,16 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
   var softmax_nesterov = exp_nesterov / exp_sum;
   var softmax_adagrad = exp_adagrad / exp_sum;
   var softmax_adadelta = exp_adadelta / exp_sum;
-  document.getElementById('particle').innerText = softmax_particle.toString();
-  document.getElementById('sgd').innerText = softmax_sgd.toString();
-  document.getElementById('momentum').innerText = softmax_momentum.toString();
-  document.getElementById('nesterov').innerText = softmax_nesterov.toString();
-  document.getElementById('adagrad').innerText = softmax_adagrad.toString();
-  document.getElementById('adadelta').innerText = softmax_adadelta.toString();
+  document.getElementById('particle').innerText = softmax_particle.toPrecision(4);
+  document.getElementById('sgd').innerText = softmax_sgd.toPrecision(4);
+  document.getElementById('momentum').innerText = softmax_momentum.toPrecision(4);
+  document.getElementById('nesterov').innerText = softmax_nesterov.toPrecision(4);
+  document.getElementById('adagrad').innerText = softmax_adagrad.toPrecision(4);
+  document.getElementById('adadelta').innerText = softmax_adadelta.toPrecision(4);
+  document.getElementById('stochastic').innerText = this.time_varying_ && this.stochastic_ ? 'enabled' : 'disabled';
+  document.getElementById('stochastic_low_frequency').innerText = this.time_varying_ && this.stochastic_ && this.stochastic_low_frequency_ ? 'enabled' : 'disabled';
+  document.getElementById('time_varying').innerText = this.time_varying_ ? 'enabled' : 'disabled';
+  document.getElementById('wireframe').innerText = this.wireframe_ ? 'enabled' : 'disabled';
 };
 
 
@@ -571,6 +582,10 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
     this.resetSimulation_();
   }
 
+  if (keys.justPressed(bouncingball.Key.SPACE)) {
+    this.wireframe_ = !this.wireframe_;
+  }
+
   if (document.pointerLockElement) {
     var d = 1e0;
     var inverse = this.rotation_.reciprocal();
@@ -615,10 +630,6 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
     if (keys.isPressed(bouncingball.Key.Q)) {
       this.translation_ = this.translation_.plus(up.times(d));
       this.tracking_ = 0;
-    }
-
-    if (keys.justPressed(bouncingball.Key.SPACE)) {
-      this.wireframe_ = !this.wireframe_;
     }
   }
 };
