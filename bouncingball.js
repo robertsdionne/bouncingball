@@ -37,7 +37,6 @@ bouncingball.install_ = function(canvas, opt_options) {
 bouncingball.pointerLock_ = function(canvas, event) {
   if (!document.pointerLockElement) {
     canvas.requestPointerLock();
-    document.getElementById('l0-editor').hidden = true;
     // bouncingball.load();
   }
 };
@@ -45,7 +44,6 @@ bouncingball.pointerLock_ = function(canvas, event) {
 
 bouncingball.pointerLockChange_ = function() {
   if (!document.pointerLockElement) {
-    // document.getElementById('l0-editor').hidden = false;
   }
 };
 
@@ -161,9 +159,8 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
   this.keys_.install();
 
   try {
-    var vertex = new bouncingball.Shader(gl, 'v0-preamble', 'l0-functions', 'l0-editor', 'v0-main');
-    var fragment = new bouncingball.Shader(
-        gl, 'f0-preamble', 'l0-functions', 'l0-editor', 'f0-main');
+    var vertex = new bouncingball.Shader(gl, 'v0-preamble', 'l0-functions', 'v0-main');
+    var fragment = new bouncingball.Shader(gl, 'f0-preamble', 'l0-functions', 'f0-main');
     this.p0_ = new bouncingball.Program(vertex, fragment);
     this.p0_.create(gl);
     this.p0_.link(gl);

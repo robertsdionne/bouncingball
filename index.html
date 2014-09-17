@@ -62,6 +62,44 @@
 
       vec3 f(vec2 xy);
 
+      vec3 f(vec2 xy) {
+        vec3 x = X(xy.x);
+        vec3 y = Y(xy.y);
+        vec3 t = Constant(time);
+        // Separate f into additive components, (a, b, c), to workaround a weird NVIDIA bug.
+        vec3 a = (
+          Multiply(
+            Sinc(
+              Divide(
+                Square(x) + Square(y),
+                Constant(100.0)
+              )
+            ),
+            Constant(10.0)
+          )
+        );
+        vec3 b = (
+          Multiply(
+            Constant(20.0),
+            Sin(
+              Divide(
+                x,
+                Constant(40.0)
+              ) - (
+                t
+              )
+            )
+          )
+        );
+        vec3 c = (
+          Divide(
+            Square(x) + Square(y),
+            Constant(3900.0)
+          )
+        );
+        return vec3(a.x + b.x + c.x, a.y + b.y + c.y, a.z + b.z + c.z);
+      }
+
       vec3 normal_f(vec2 xz) {
         vec3 f = f(xz);
         return normalize(vec3(-f.x, 1.0, -f.y));
@@ -228,15 +266,6 @@
   </head>
   <body onload="bouncingball.load();">
     <div id="container">
-      <div id="l0-editor" contentEditable="true" hidden="true">vec3 f(vec2 xy) {
-  vec3 x = X(xy.x);
-  vec3 y = Y(xy.y);
-  vec3 t = Constant(time);
-  return Multiply(Sinc(Divide(Square(x) + Square(y), Constant(100.0))), Constant(10.0)) +
-      Multiply(Constant(20.0), Sin(Divide(x, Constant(40.0)) - t)) + Divide(Square(x) +
-      Square(y), Constant(3900.0));
-}
-</div>
       <canvas id='c0'></canvas>
     </div>
     <div id="scoreboard">
