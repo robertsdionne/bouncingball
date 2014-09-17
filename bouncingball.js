@@ -566,15 +566,15 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
 bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
 
   // Settings keys
-  if (keys.justPressed(bouncingball.Key.QUESTION)) {
+  if (keys.justPressed(bouncingball.Key.LT)) {
     this.time_varying_ = !this.time_varying_;
   }
 
-  if (keys.justPressed(bouncingball.Key.LT)) {
+  if (keys.justPressed(bouncingball.Key.GT)) {
     this.stochastic_ = !this.stochastic_;
   }
 
-  if (keys.justPressed(bouncingball.Key.GT)) {
+  if (keys.justPressed(bouncingball.Key.QUESTION)) {
     this.stochastic_low_frequency_ = !this.stochastic_low_frequency_;
   }
 
