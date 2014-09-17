@@ -35,13 +35,17 @@ bouncingball.Key = {
   K: 75,
   S: 83,
   D: 68,
+  F: 70,
   Q: 81,
+  R: 82,
   Y: 89,
   Z: 90,
   N: 78,
   P: 80,
   LT: 188,
-  GT: 190
+  GT: 190,
+  QUESTION: 191,
+  BACKTICK: 192
 };
 
 
@@ -60,7 +64,7 @@ bouncingball.Keys.prototype.uninstall = function() {
 
 
 bouncingball.Keys.prototype.handleKeyDown_ = function(event) {
-  // console.log(event);
+  console.log(event);
   this.keys_[event.keyCode] = true;
   return true;
 };

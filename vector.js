@@ -180,6 +180,11 @@ bouncingball.Vector.prototype.toMatrix = function() {
 };
 
 
+bouncingball.Vector.prototype.toArray = function() {
+  return [this.x, this.y, this.z];
+};
+
+
 /**
  * @return {string} A string representation of this vector.
  */
