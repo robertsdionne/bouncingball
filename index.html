@@ -130,7 +130,7 @@
     </script>
     <script id="f0-preamble" type="x-shader/x-fragment">
       precision mediump float;
-      uniform bool wireframe;
+      uniform bool contour, wireframe;
       uniform highp float time;
       uniform highp mat4 rotation, rotation_inverse, translation, translation_inverse;
       uniform vec3 particle, sgd, momentum, nesterov, adagrad, adadelta;
@@ -164,6 +164,7 @@
       }
 
       void main() {
+        vec3 evaluation = f(fragment_position.xz);
         vec3 normal = normal_f(fragment_position.xz);
         vec3 particle_light = light(normal, particle_color, particle, 1.0);
         vec3 sgd_light = light(normal, sgd_color, solver_position(sgd), 1.0);
@@ -174,8 +175,11 @@
         vec3 sunlight = sun(normal, vec3(0.83));
         vec3 all_light = sunlight + particle_light + sgd_light + momentum_light + nesterov_light + adagrad_light + adadelta_light;
         if (gl_FrontFacing) {
+          float contour_factor = clamp(1.0 - length(fragment_position.xz) / 2.0e3, 0.0, 1.0);
           if (wireframe && any(lessThan(fragment_barycentric.xz, vec2(0.05)))) {
-            gl_FragColor = vec4(vec3(0.0), 1.0);
+            gl_FragColor = vec4(all_light - sunlight, 1.0);
+          } else if (contour && mod(mix(fragment_position.y, evaluation.z, contour_factor), 50.0) < 5.0) {
+            gl_FragColor = vec4(all_light - sunlight * contour_factor, 1.0);
           } else {
             gl_FragColor = vec4(all_light, 1.0);
           }
@@ -283,7 +287,8 @@
       <table>
         <tr><td>Time-Varying (, to toggle): </td><td id="time_varying"></td></tr>
         <tr><td>Stochastic (. to toggle): </td><td id="stochastic"></td></tr>
-        <tr><td>Smoothed Stochastic (/? to toggle): </td><td id="stochastic_low_frequency"></td></tr>
+        <tr><td>Low-Frequency Stochastic (/? to toggle): </td><td id="stochastic_low_frequency"></td></tr>
+        <tr><td>Show Contour Lines (X to toggle): </td><td id="contour"></td></tr>
         <tr><td>Show Wireframe (space to toggle): </td><td id="wireframe"></td></tr>
         <tr><td>Control Viewpoint (click).</td></tr>
         <tr><td>Follow a Solver (click again).</td></tr>

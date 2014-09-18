@@ -96,19 +96,20 @@ bouncingball.BouncingBallRenderer.prototype.getFrustumMatrix = function(
 };
 
 
-bouncingball.BouncingBallRenderer.prototype.sinc = function(u) {
+bouncingball.BouncingBallRenderer.prototype.sinc = function(u, t) {
   return bouncingball.MultiDualNumber.sin(
-      u.minus(new bouncingball.MultiDualNumber(10.0 * this.time_ + 1.0))).over(
+      u.minus(new bouncingball.MultiDualNumber(10.0 * t + 1.0))).over(
           u.plus(new bouncingball.MultiDualNumber(1.0)));
 };
 
 
-bouncingball.BouncingBallRenderer.prototype.f = function(in_x, in_y) {
+bouncingball.BouncingBallRenderer.prototype.f = function(in_x, in_y, opt_time) {
   var x = bouncingball.MultiDualNumber.x(in_x);
   var y = bouncingball.MultiDualNumber.y(in_y);
-  var t = new bouncingball.MultiDualNumber(this.time_);
+  var time = opt_time == undefined ? this.time_ : opt_time;
+  var t = new bouncingball.MultiDualNumber(time);
  return this.sinc(
-    x.squared().plus(y.squared()).over(new bouncingball.MultiDualNumber(100.0))).times(
+    x.squared().plus(y.squared()).over(new bouncingball.MultiDualNumber(100.0)), time).times(
         new bouncingball.MultiDualNumber(10.0)).plus(
   new bouncingball.MultiDualNumber(20.0).times(
           bouncingball.MultiDualNumber.sin(x.over(new bouncingball.MultiDualNumber(40.0)).minus(t)))).plus(
@@ -116,8 +117,8 @@ bouncingball.BouncingBallRenderer.prototype.f = function(in_x, in_y) {
 };
 
 
-bouncingball.BouncingBallRenderer.prototype.normal_f = function(x, y) {
-  var f = this.f(x, y);
+bouncingball.BouncingBallRenderer.prototype.normal_f = function(x, y, time) {
+  var f = this.f(x, y, time);
   return new bouncingball.Vector(-f.dx, 1.0, -f.dy).normalized();
 };
 
@@ -192,6 +193,7 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
 
   this.rotation_ = new bouncingball.Quaternion();
   this.translation_ = new bouncingball.Vector(0.0, 80.0, 270.0);
+  this.contour_ = true;
   this.wireframe_ = false;
 
   // meta
@@ -310,19 +312,23 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
       this.particle_score_ = this.particle_score_ * this.score_decay_ - particle_z * (1.0 - this.score_decay_);
     }
 
+    var time = this.stochastic_low_frequency_ ? this.time_ : this.real_time_;
+
     var sgd = this.f(this.sgd_.x, this.sgd_.z);
+    var sgd_realtime = this.f(this.sgd_.x, this.sgd_.z, time);
     this.sgd_ = this.sgd_.minus(new bouncingball.Vector(sgd.dx, 0.0, sgd.dy));
-    this.sgd_.y = sgd.z;
+    this.sgd_.y = sgd_realtime.z;
     if (sample < this.score_rate_) {
       // this.sgd_score_ -= sgd.z;
       this.sgd_score_ = this.sgd_score_ * this.score_decay_ - sgd.z * (1.0 - this.score_decay_);
     }
 
     var momentum = this.f(this.momentum_.x, this.momentum_.z);
+    var momentum_realtime = this.f(this.momentum_.x, this.momentum_.z, time);
     this.momentum_v_ = this.momentum_v_.times(this.momentum_mu_).minus(
         new bouncingball.Vector(momentum.dx, 0.0, momentum.dy).times(this.dt_))
     this.momentum_ = this.momentum_.plus(this.momentum_v_);
-    this.momentum_.y = momentum.z;
+    this.momentum_.y = momentum_realtime.z;
     if (sample < this.score_rate_) {
       // this.momentum_score_ -= momentum.z;
       this.momentum_score_ = this.momentum_score_ * this.score_decay_ - momentum.z * (1.0 - this.score_decay_);
@@ -330,20 +336,22 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
 
     var nesterov_temp = this.nesterov_.plus(this.nesterov_v_.times(this.nesterov_mu_));
     var nesterov = this.f(nesterov_temp.x, nesterov_temp.z);
+    var nesterov_realtime = this.f(nesterov_temp.x, nesterov_temp.z, time);
     this.nesterov_v_ = this.nesterov_v_.times(this.nesterov_mu_).minus(
         new bouncingball.Vector(nesterov.dx, 0.0, nesterov.dy).times(this.dt_))
     this.nesterov_ = this.nesterov_.plus(this.nesterov_v_);
-    this.nesterov_.y = nesterov.z;
+    this.nesterov_.y = nesterov_realtime.z;
     if (sample < this.score_rate_) {
       // this.nesterov_score_ -= nesterov.z;
       this.nesterov_score_ = this.nesterov_score_ * this.score_decay_ - nesterov.z * (1.0 - this.score_decay_);
     }
 
     var adagrad = this.f(this.adagrad_.x, this.adagrad_.z);
+    var adagrad_realtime = this.f(this.adagrad_.x, this.adagrad_.z, time);
     this.adagrad_sigma_ = this.adagrad_sigma_.plus(
         new bouncingball.Vector(adagrad.dx * adagrad.dx, 0.0, adagrad.dy * adagrad.dy));
     this.adagrad_.x -= 100.0 * adagrad.dx / Math.sqrt(this.adagrad_sigma_.x);
-    this.adagrad_.y = adagrad.z;
+    this.adagrad_.y = adagrad_realtime.z;
     this.adagrad_.z -= 100.0 * adagrad.dy / Math.sqrt(this.adagrad_sigma_.z);
     if (sample < this.score_rate_) {
       // this.adagrad_score_ -= adagrad.z;
@@ -351,6 +359,7 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
     }
 
     var adadelta = this.f(this.adadelta_.x, this.adadelta_.z);
+    var adadelta_realtime = this.f(this.adadelta_.x, this.adadelta_.z, time);
     this.adadelta_gradient_sigma_ = this.adadelta_gradient_sigma_.times(this.adadelta_rho_).plus(
         new bouncingball.Vector(adadelta.dx * adadelta.dx, 0.0, adadelta.dy * adadelta.dy).times(
             1.0 - this.adadelta_rho_));
@@ -362,7 +371,7 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
         new bouncingball.Vector(delta_x * delta_x, 0.0, delta_y * delta_y).times(
             1.0 - this.adadelta_rho_));
     this.adadelta_.x += 1e4 * delta_x;
-    this.adadelta_.y = adadelta.z;
+    this.adadelta_.y = adadelta_realtime.z;
     this.adadelta_.z += 1e4 * delta_y;
     if (sample < this.score_rate_) {
       // this.adadelta_score_ -= adadelta.z;
@@ -412,6 +421,7 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
   document.getElementById('stochastic').innerText = this.time_varying_ && this.stochastic_ ? 'enabled' : 'disabled';
   document.getElementById('stochastic_low_frequency').innerText = this.time_varying_ && this.stochastic_ && this.stochastic_low_frequency_ ? 'enabled' : 'disabled';
   document.getElementById('time_varying').innerText = this.time_varying_ ? 'enabled' : 'disabled';
+  document.getElementById('contour').innerText = this.contour_ ? 'enabled' : 'disabled';
   document.getElementById('wireframe').innerText = this.wireframe_ ? 'enabled' : 'disabled';
 };
 
@@ -443,11 +453,11 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   this.train_();
 
   // fix player position
-  if (this.time_varying_ && this.stochastic_ && !this.stochastic_low_frequency_) {
-    if (this.tracking_ % 2 == 1) {
-      this.translation_ = this.particle_smooth_.plus(bouncingball.Vector.J.times(4));
-    }
-  } else {
+  // if (this.time_varying_ && this.stochastic_ && !this.stochastic_low_frequency_) {
+  //   if (this.tracking_ % 2 == 1) {
+  //     this.translation_ = this.particle_smooth_.plus(bouncingball.Vector.J.times(4));
+  //   }
+  // } else {
     if (this.tracking_ % 7 == 1) {
       this.translation_ = this.particle_smooth_.plus(bouncingball.Vector.J.times(4));
     } else if (this.tracking_ % 7 == 2) {
@@ -461,9 +471,10 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
     } else if (this.tracking_ % 7 == 6) {
       this.translation_ = this.adadelta_smooth_.plus(bouncingball.Vector.J.times(4));
     }
-  }
+  // }
 
-  var f = this.f(this.translation_.x, this.translation_.z);
+  var time = this.stochastic_low_frequency_ ? this.time_ : this.real_time_;
+  var f = this.f(this.translation_.x, this.translation_.z, time);
   if (this.translation_.y < f.z + 1.0) {
     this.translation_.y = f.z + 1.0;
   }
@@ -472,6 +483,7 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
   gl.useProgram(this.p0_.handle);
+  gl.uniform1i(this.p0_['contour'], this.contour_);
   gl.uniform1i(this.p0_['wireframe'], this.wireframe_);
   gl.uniform1f(this.p0_['time'], (!this.stochastic_ || this.stochastic_low_frequency_) ? this.time_ : this.real_time_);
   gl.uniformMatrix4fv(this.p0_['projection'], false, this.projection_);
@@ -525,7 +537,7 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
   gl.uniform3fv(this.p1_['particle_position'], this.particle_.toArray());
   gl.drawArrays(gl.TRIANGLES, 0, this.sphere_elements_);
 
-  if (!this.time_varying_ || !this.stochastic_ || this.stochastic_low_frequency_) {
+  // if (!this.time_varying_ || !this.stochastic_ || this.stochastic_low_frequency_) {
     // sgd
     gl.uniform1f(this.p1_['radius'], this.radius_(this.sgd_));
     gl.uniform3fv(this.p1_['color'], this.sgd_color_);
@@ -555,7 +567,7 @@ bouncingball.BouncingBallRenderer.prototype.onDraw = function(gl) {
     gl.uniform3fv(this.p1_['color'], this.adadelta_color_);
     gl.uniform3fv(this.p1_['particle_position'], this.adadelta_.toArray());
     gl.drawArrays(gl.TRIANGLES, 0, this.sphere_elements_);
-  }
+  // }
 
   gl.flush();
 
@@ -580,6 +592,10 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
 
   if (keys.justPressed(bouncingball.Key.R)) {
     this.resetSimulation_();
+  }
+
+  if (keys.justPressed(bouncingball.Key.X)) {
+    this.contour_ = !this.contour_;
   }
 
   if (keys.justPressed(bouncingball.Key.SPACE)) {
