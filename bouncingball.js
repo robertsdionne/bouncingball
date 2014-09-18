@@ -415,6 +415,8 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
   var softmax_nesterov = exp_nesterov / exp_sum;
   var softmax_adagrad = exp_adagrad / exp_sum;
   var softmax_adadelta = exp_adadelta / exp_sum;
+
+  // chrome
   document.getElementById('particle').innerText = softmax_particle.toPrecision(4);
   document.getElementById('sgd').innerText = softmax_sgd.toPrecision(4);
   document.getElementById('momentum').innerText = softmax_momentum.toPrecision(4);
@@ -426,6 +428,19 @@ bouncingball.BouncingBallRenderer.prototype.train_ = function() {
   document.getElementById('time_varying').innerText = this.time_varying_ ? 'enabled' : 'disabled';
   document.getElementById('contour').innerText = this.contour_ ? 'enabled' : 'disabled';
   document.getElementById('wireframe').innerText = this.wireframe_ ? 'enabled' : 'disabled';
+
+  // firefox
+  document.getElementById('particle').textContent = softmax_particle.toPrecision(4);
+  document.getElementById('sgd').textContent = softmax_sgd.toPrecision(4);
+  document.getElementById('momentum').textContent = softmax_momentum.toPrecision(4);
+  document.getElementById('nesterov').textContent = softmax_nesterov.toPrecision(4);
+  document.getElementById('adagrad').textContent = softmax_adagrad.toPrecision(4);
+  document.getElementById('adadelta').textContent = softmax_adadelta.toPrecision(4);
+  document.getElementById('stochastic').textContent = this.time_varying_ && this.stochastic_ ? 'enabled' : 'disabled';
+  document.getElementById('stochastic_low_frequency').textContent = this.time_varying_ && this.stochastic_ && this.stochastic_low_frequency_ ? 'enabled' : 'disabled';
+  document.getElementById('time_varying').textContent = this.time_varying_ ? 'enabled' : 'disabled';
+  document.getElementById('contour').textContent = this.contour_ ? 'enabled' : 'disabled';
+  document.getElementById('wireframe').textContent = this.wireframe_ ? 'enabled' : 'disabled';
 };
 
 
