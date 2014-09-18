@@ -219,6 +219,9 @@ bouncingball.BouncingBallRenderer.prototype.onCreate = function(gl) {
 
 bouncingball.BouncingBallRenderer.prototype.resetSimulation_ = function() {
 
+  // meta
+  this.tracking_ = 0;
+
   // optimizers
   this.dt_ = 1.6e-2;
   this.g_ = 9.8e1;
@@ -602,7 +605,7 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
     this.wireframe_ = !this.wireframe_;
   }
 
-  if (document.pointerLockElement) {
+  // if (document.pointerLockElement) {
     var d = 1e0;
     var inverse = this.rotation_.reciprocal();
     var right = inverse.transform(bouncingball.Vector.I);
@@ -647,7 +650,7 @@ bouncingball.BouncingBallRenderer.prototype.handleKeys = function(keys) {
       this.translation_ = this.translation_.plus(up.times(d));
       this.tracking_ = 0;
     }
-  }
+  // }
 };
 
 
