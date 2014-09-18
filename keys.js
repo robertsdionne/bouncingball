@@ -38,6 +38,7 @@ bouncingball.Key = {
   F: 70,
   Q: 81,
   R: 82,
+  X: 88,
   Y: 89,
   Z: 90,
   N: 78,
