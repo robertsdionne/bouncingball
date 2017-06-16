@@ -58,9 +58,11 @@ bouncingball.Application.prototype.checkDimensions_ = function() {
  * @param {bouncingball.Renderer} renderer The renderer.
  */
 bouncingball.Application.prototype.install = function(canvas, renderer) {
+  const devicePixelRatio = this.window_.devicePixelRatio || 1;
   this.canvas_ = canvas;
-  this.canvas_.width = this.window_.innerWidth;
-  this.canvas_.height = this.window_.innerHeight;
+  this.canvas_.style = `width:${this.window_.innerWidth}px;height:${this.window_.innerHeight}px;`;
+  this.canvas_.width = this.window_.innerWidth * devicePixelRatio;
+  this.canvas_.height = this.window_.innerHeight * devicePixelRatio;
   this.gl_ = /** @type {WebGLRenderingContext} */ (
       this.canvas_.getContext(bouncingball.Application.WEBGL_CONTEXT));
   this.renderer_ = renderer;
